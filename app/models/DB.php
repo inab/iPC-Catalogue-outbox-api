@@ -34,7 +34,17 @@ class DB {
 	
 		$bulk = new \MongoDB\Driver\BulkWrite;
     
-   	$bulk->update($doc, $set);
+   		$bulk->update($doc, $set);
+
+		$this->mng->executeBulkWrite($this->database.".".$collection, $bulk);
+
+	}
+
+	public function upsertDocument($collection, $doc, $set) {
+	
+		$bulk = new \MongoDB\Driver\BulkWrite;
+    
+   		$bulk->update($doc, $set, ["upsert" => true]);
 
 		$this->mng->executeBulkWrite($this->database.".".$collection, $bulk);
 

@@ -92,12 +92,12 @@ class ApiController extends Controller {
         
         $filters = $request->getQueryParams(); #sort,fields,page,offset,..
 
-        $idObj = $request->getParsedBody();
+        /*$idObj = $request->getParsedBody();*/
 
-        $limit = "";
+        $idObj = json_decode($request->getBody());
 
-        $files = $this->vrefile->postFileID($sub,$limit,$idObj);
-        
+        $files = $this->vrefile->postFileID($sub,$idObj);
+        var_dump($files);
         /*$response = $response->withHeader('Content-Type', 'application/json');
         $response = $response->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization');
         $response = $response->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');

@@ -31,10 +31,10 @@ $app->group('/v1', function() use ($container) {
     // Files metadata: get metadata.
     $this->group('/metadata', function () use ($container) {
 
-        // Getting the metadata for all the files associated to a vre_id.
+        // Getting the metadata for all the files ID associated to a user.
         $this->get('', 'apiController:get_user_resources');
 
-        // Post metadata from Catalogue portal (fileID).
+        // Post metadata from Catalogue portal.
         $this->post('', 'apiController:set_user_files');
 
     })->add(new App\Middleware\JsonResponse($container));
