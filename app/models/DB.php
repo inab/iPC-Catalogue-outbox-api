@@ -40,11 +40,11 @@ class DB {
 
 	}
 
-	public function upsertDocument($collection, $doc, $set) {
+	public function updateDocumentWithOptions($collection, $doc, $set, $options) {
 	
 		$bulk = new \MongoDB\Driver\BulkWrite;
     
-   		$bulk->update($doc, $set, ["upsert" => true]);
+   		$bulk->update($doc, $set, $options);
 
 		$this->mng->executeBulkWrite($this->database.".".$collection, $bulk);
 

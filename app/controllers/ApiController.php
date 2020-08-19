@@ -97,15 +97,15 @@ class ApiController extends Controller {
         $idObj = json_decode($request->getBody());
 
         $files = $this->vrefile->postFileID($sub,$idObj);
-        var_dump($files);
-        /*$response = $response->withHeader('Content-Type', 'application/json');
+
+        $response = $response->withHeader('Content-Type', 'application/json');
         $response = $response->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization');
         $response = $response->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
         $response = $response->withHeader('Access-Control-Allow-Origin', '*');
 
         echo json_encode($files,JSON_PRETTY_PRINT);
 
-        return $response;*/
+        return $response;
         
     }
 

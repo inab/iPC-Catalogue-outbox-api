@@ -120,19 +120,39 @@ class VREfile extends Model
 
         public function postFileID($sub, $idObj)
         {
+                // 1. APPEND A NEW FILEID ON USERDATA COLLECTION IF IT DOESN'T EXISTS.
+
+                // 1.A. GET FILEID FROM REQUEST BODY.
+
+                $id = $idObj->_id;
+
+                // 1.B. GET USER'S FILEIDS ARRAY.
+
+                $exists = False;
+
+                $userFileIds = $this->vrefile->getFilesID($sub, $limit = 0, $sort_by = "_id");
+
+                // 1.C. CHECK IF FILEID ALREADY EXISTS ON USER FILES LIST. 
+
+                foreach ($userFileIds[0] as $fileId) {
+                        if($fileId === $id) {
+                                $exists = True;  
+                        }
+                }
+
+                // 1.D. UPDATE LIST FROM DOCUMENT IN USER COLLECTION.
+                if(!($exists)) {
+                        $this->db->updateDocument($this->collectionF, ["_id" => $sub], ['$push' => ['fileIds' => $id ] ] );
+                }
                 
-                $temp = array();
+                // 2. INSERT DOCUMENT INTO FILES COLLECTION. UPSERT.
 
-                array_push($temp, $idObj);
+                $this->db->updateDocumentWithOptions($this->collectionM, ["_id" => $id], $idObj, [ 'upsert' => true] );
 
-                $meta = $this->getMetadataFromID($temp);
-
-                var_dump($meta);
-                var_dump($temp);
-
-                /*$this->db->upsertDocument($this->collectionM, $meta, $temp);*/
-        
-                return true;
+                // 3. RETURN DOCUMENT.
+                $res = $this->db->getDocuments($this->collectionM, ["_id" => $id], ["projection" => ["metadata" => true]]);
+                
+                return $res;
         }
         
 }
