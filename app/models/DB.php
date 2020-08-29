@@ -54,7 +54,7 @@ class DB {
 	
 		$bulk = new \MongoDB\Driver\BulkWrite;
     
-   	$bulk->delete($doc);
+   		$bulk->delete($doc);
 
 		$this->mng->executeBulkWrite($this->database.".".$collection, $bulk);
 

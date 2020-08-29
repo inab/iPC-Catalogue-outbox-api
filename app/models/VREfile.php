@@ -155,4 +155,27 @@ class VREfile extends Model
                 return $res;
         }
         
+        public function deleteFileByID($sub, $idObj)
+        {
+                // 1. DELETE FILEID ON USERDATA COLLECTION.
+
+                // 1.A. GET FILEID FROM REQUEST BODY.
+
+                $id = $idObj->_id;
+                var_dump($id);
+
+                // 1.B. UPDATE LIST FROM DOCUMENT IN USER COLLECTION => DELETE
+                
+                $this->db->updateDocument($this->collectionF, ["_id" => $sub], ['$pull' => ['fileIds' => $id ] ] );
+                
+                // 1.C DELETE DOCUMENT FROM FILES COLLECTION.
+
+                $this->db->deleteDocument($this->collectionM, ["_id" => $id]);
+
+                // 3. RETURN DOCUMENT.
+                $res = "{ 'status' : 'deleted' }";
+
+                return $res;
+        }
+
 }

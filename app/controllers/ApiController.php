@@ -108,7 +108,27 @@ class ApiController extends Controller {
         return $response;
         
     }
+    
+    public function delete_user_file($request, $response, $args) {
 
+        $sub = $request->getAttribute('userLogin');
+        
+        $filters = $request->getQueryParams(); #sort,fields,page,offset,..
+
+        $idObj = json_decode($request->getBody());
+
+        $files = $this->vrefile->deleteFileByID($sub,$idObj);
+
+        $response = $response->withHeader('Content-Type', 'application/json');
+        $response = $response->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization');
+        $response = $response->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
+        $response = $response->withHeader('Access-Control-Allow-Origin', '*');
+
+        echo json_encode($files,JSON_PRETTY_PRINT);
+
+        return $response;
+        
+    }
 
     /**
      * @SWG\Get(

@@ -37,6 +37,9 @@ $app->group('/v1', function() use ($container) {
         // Post metadata from Catalogue portal.
         $this->post('', 'apiController:set_user_files');
 
+        // Post metadata from Catalogue portal.
+        $this->delete('', 'apiController:delete_user_file');
+
     })->add(new App\Middleware\JsonResponse($container));
 
 })->add(new App\Middleware\TokenVerify($container));
