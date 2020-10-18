@@ -86,7 +86,7 @@ class VREfile extends Model
         {
                 $idsArr = $this->getFilesID($sub, $limit, $sort_by);
 
-                $meta = $this->getMetadataFromID($idsArr);
+                $meta = $this->getMetadataFromID($sub, $idsArr);
 
                 return $meta;
         }
@@ -106,13 +106,21 @@ class VREfile extends Model
                 return $ids;
         }
 
-        private function getMetadataFromID($idsArr)
+        private function getMetadataFromID($sub,$idsArr)
         {
                 $meta  =  array();
 
                 foreach ($idsArr[0] as $el) {
                         $userObj = $this->db->getDocuments($this->collectionM, ["_id" => $el], ["projection" => ["metadata" => true]]);
                         array_push($meta, $userObj);
+                }
+
+                $userAnalysis = $this->db->getDocuments($this->collectionF, ["_id" => $sub], ["projection" => ["analysis" => true], "limit" => $limit]);
+
+                $temp = $userAnalysis[0]->analysis;
+
+                foreach ($temp as $key=>$value) {
+                        $meta[$key][0]->metadata->analysis = $value;
                 }
 
                 return $meta;
@@ -126,6 +134,10 @@ class VREfile extends Model
 
                 $id = $idObj->_id;
 
+                $analysis = $idObj->metadata->analysis;
+
+                unset($idObj->metadata->analysis);
+
                 // 1.B. GET USER'S FILEIDS ARRAY.
 
                 $exists = False;
@@ -134,15 +146,16 @@ class VREfile extends Model
 
                 // 1.C. CHECK IF FILEID ALREADY EXISTS ON USER FILES LIST. 
 
-                foreach ($userFileIds[0] as $fileId) {
-                        if($fileId === $id) {
+                foreach ($userFileIds[0] as $key=>$value) {
+                        if($value === $id) {
                                 $exists = True;  
+                                //$index = $key;
                         }
                 }
 
                 // 1.D. UPDATE LIST FROM DOCUMENT IN USER COLLECTION.
                 if(!($exists)) {
-                        $this->db->updateDocument($this->collectionF, ["_id" => $sub], ['$push' => ['fileIds' => $id ] ] );
+                        $this->db->updateDocument($this->collectionF, ["_id" => $sub], ['$push' => ['fileIds' => $id, 'analysis' => $analysis] ] );
                 }
                 
                 // 2. INSERT DOCUMENT INTO FILES COLLECTION. UPSERT.
@@ -162,20 +175,53 @@ class VREfile extends Model
                 // 1.A. GET FILEID FROM REQUEST BODY.
 
                 $id = $idObj->_id;
-                var_dump($id);
 
-                // 1.B. UPDATE LIST FROM DOCUMENT IN USER COLLECTION => DELETE
-                
-                $this->db->updateDocument($this->collectionF, ["_id" => $sub], ['$pull' => ['fileIds' => $id ] ] );
-                
-                // 1.C DELETE DOCUMENT FROM FILES COLLECTION.
+                $all = $this->db->getDocuments($this->collectionF, ["_id" => $sub], ["projection" => [ "fileIds" => true, "analysis" => true ], "limit" => $limit]);
+                $analysisList = $all[0]->analysis;
 
-                $this->db->deleteDocument($this->collectionM, ["_id" => $id]);
+                $userFileIds = $this->vrefile->getFilesID($sub, $limit = 0, $sort_by = "_id");
+
+                // 1.B. GET ANALYSIS ID INDEX. REMOVE. 
+
+                foreach ($userFileIds[0] as $key=>$value) {
+                        var_dump($value);
+                        var_dump($id);
+                        if($value === $id) {  
+                                $index = $key;
+                        }
+                }
+
+                // 1.C. UPDATE LIST FROM DOCUMENT IN USER COLLECTION => DELETE
+                
+                // 1.C.1. REMOVE FILEID BY VALUE.
+                $this->db->updateDocument($this->collectionF, ["_id" => $sub], ['$pull' => ['fileIds' => $id ] ]);
+                
+                // 1.C.2. REMOVE ANALYSIS BY INDEX.
+                $this->db->updateDocument($this->collectionF, ["_id" => $sub], ['$set' => ["analysis.$index" => null]]);
+                $this->db->updateDocument($this->collectionF, ["_id" => $sub], ['$pull' => ['analysis' => null ] ]);
+                
+                // 1.D DELETE DOCUMENT FROM FILES COLLECTION. WE SHOULD ADD A COUNTER INTO FILESMETADATA FOR DIFFERENT USERS ACCESSING TO THAT FILE.
+
+                // $this->db->deleteDocument($this->collectionM, ["_id" => $id]);
 
                 // 3. RETURN DOCUMENT.
                 $res = "{ 'status' : 'deleted' }";
 
                 return $res;
+        }
+
+        public function checkUser($sub, $email)
+        {
+                $userObj = $this->db->getDocuments($this->collectionF, ["_id" => $sub], ["projection" => ["_id" => true], "limit" => $limit]);
+                //var_dump($userObj);
+                if(!isset($userObj[0]->_id)) {
+                        $obj = (object) [
+                                '_id' => $sub,
+                                'fileIds' => [ ]
+                            ];
+                        $this->db->insertDocument($this->collectionF, $obj );
+                }
+                return $userObj;
         }
 
 }

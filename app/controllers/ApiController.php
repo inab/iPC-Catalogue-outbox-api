@@ -89,12 +89,24 @@ class ApiController extends Controller {
     public function set_user_files($request, $response, $args) {
 
         $sub = $request->getAttribute('userLogin');
+        //$all = $request->getAttributes();
+        $email = $request->getAttribute('userEmail');
+        //$name = $request->getAttribute('userName');
         
         $filters = $request->getQueryParams(); #sort,fields,page,offset,..
 
         /*$idObj = $request->getParsedBody();*/
 
         $idObj = json_decode($request->getBody());
+        var_dump($idObj);
+
+        //var_dump($sub);
+        //var_dump($idObj);
+        //var_dump($email);
+        //var_dump($all);
+
+        // Here we check whether user collection exists and if not, then, it does create it.
+        $hola = $this->vrefile->checkUser($sub,$email);
 
         $files = $this->vrefile->postFileID($sub,$idObj);
 
