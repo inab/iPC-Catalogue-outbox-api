@@ -40,6 +40,16 @@ $container['db'] = function ($c) {
 	return new \App\Models\DB($mng, $db['database']);
 };
 
+// DB dependency: permissions_db
+$container['permissions_db'] = function ($c) {
+
+	$permissions_db = $c->get('settings')['permissions_db'];
+	
+	$mng = new \MongoDB\Driver\Manager("mongodb://".$permissions_db['username'].":".$permissions_db['password']."@".$permissions_db['host']."/".$permissions_db['database'].'?authSource='.$permissions_db['authSource']);
+
+	return new \App\Models\DB($mng, $permissions_db['database']);
+};
+
 
 // CONTROLLERS
 $container['staticPages'] = function($c) {
@@ -79,6 +89,12 @@ $container['oauth2'] = function($c) {
 $container['vrefile'] = function($c) {
 
 	return new \App\Models\VREfile($c);
+
+};
+
+$container['permissions'] = function($c) {
+
+	return new \App\Models\Permissions($c);
 
 };
 

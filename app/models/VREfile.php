@@ -182,10 +182,8 @@ class VREfile extends Model
                 $userFileIds = $this->vrefile->getFilesID($sub, $limit = 0, $sort_by = "_id");
 
                 // 1.B. GET ANALYSIS ID INDEX. REMOVE. 
-
+               
                 foreach ($userFileIds[0] as $key=>$value) {
-                        var_dump($value);
-                        var_dump($id);
                         if($value === $id) {  
                                 $index = $key;
                         }
@@ -208,6 +206,19 @@ class VREfile extends Model
                 $res = "{ 'status' : 'deleted' }";
 
                 return $res;
+        }
+
+        public function updateUserFiles($sub, $files, $filePermissions)
+        {
+                $filtered = array();
+                foreach ($files[0] as $el) {
+                        if(!in_array($el->_id, $filePermissions )){
+                                $status = $this->deleteFileByID($sub, $el);
+                        } else {
+                                array_push($filtered, $el);
+                        }
+                }
+                return $filtered;
         }
 
         public function checkUser($sub, $email)

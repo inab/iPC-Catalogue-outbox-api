@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use \App\Models\VREfile as VREfile;
+use \App\Models\Permissions as Permissions;
 
 #require_once ( __DIR__ . '/../models/Utilities.php' );
 #require_once ( __DIR__ . '/Controller.php' );
@@ -72,14 +73,18 @@ class ApiController extends Controller {
             $limit=(int)$filters['limit'];
         }
 
+        $filePermissions = $this->permissions->getUserFiles($sub);
+
         $files = $this->vrefile->getFilesMetadata($sub,$limit);
+
+        $allowedFiles = $this->vrefile->updateUserFiles($sub, $files, $filePermissions);
         
         $response = $response->withHeader('Content-Type', 'application/json');
         $response = $response->withHeader('Access-Control-Allow-Headers', 'X-Requested-With, Content-Type, Accept, Origin, Authorization');
         $response = $response->withHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, PATCH, OPTIONS');
         $response = $response->withHeader('Access-Control-Allow-Origin', '*');
 
-        echo json_encode($files,JSON_PRETTY_PRINT);
+        echo json_encode($allowedFiles,JSON_PRETTY_PRINT);
 
         return $response;
         
